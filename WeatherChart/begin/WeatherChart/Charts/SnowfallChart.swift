@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2022 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,34 +26,46 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+import Foundation
 import SwiftUI
 
-struct PrecipitationTab: View {
-  var station: WeatherStation
-  
-  func monthFromName(_ name: String) -> Int {
-    let df = DateFormatter()
-    df.dateFormat = "LLLL"
-    if let date = df.date(from: name) {
-      return Calendar.current.component(.month, from: date)
+struct SnowfallChart: View  {
+    var measurements: [DayInfo]
+    
+    var body: some View {
+        // 1
+        List(measurements.filter { $0.snowfall > 0.0 }) { measurement in
+          HStack {
+            // 2
+            Text("\(measurement.dateString)")
+              .frame(width: 100, alignment: .trailing)
+            // 3
+            ZStack(alignment: .leading) {
+              Rectangle()
+                .fill(Color.blue)
+                .frame(width: CGFloat(measurement.snowfall * 10.0), height: 5.0)
+                
+                ForEach(0..<17) { mark in
+                  Rectangle()
+                    .fill(mark % 5 == 0 ? Color.black : Color.gray)
+                    .offset(x: CGFloat(mark) * 10.0)
+                    .frame(width: 1.0)
+                    .zIndex(1)
+                }
+
+            }
+            // 4
+            Spacer()
+            Text("\(measurement.snowfall.stringToOneDecimal)\"")
+          }
+        }
+
     }
-    return 0
-  }
-  
- 
-  
-  
-  
-  var body: some View {
-    VStack {
-      Text("Precipitation for 2018")
-        PrecipitationChart(measurements: station.measurements)
-    }.padding()
-  }
+
 }
 
-struct PrecipitationTab_Previews: PreviewProvider {
+struct SnowfallChart_Previews: PreviewProvider {
   static var previews: some View {
-    PrecipitationTab(station: WeatherInformation()!.stations[1])
+    SnowfallChart(measurements: WeatherInformation()!.stations[2].measurements)
   }
 }

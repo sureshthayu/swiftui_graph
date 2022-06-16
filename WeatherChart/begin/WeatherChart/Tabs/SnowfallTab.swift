@@ -34,9 +34,8 @@ struct SnowfallTab: View {
   var body: some View {
     VStack {
       Text("Snowfall for 2018")
-      List(self.station.measurements.filter { $0.snowfall > 0.0 }) { measurement in
-        Text("\(measurement.dateString): \(measurement.snowfall.stringToOneDecimal)\"")
-      }
+        SnowfallChart(measurements: station.measurements)
+
     }.padding()
   }
 }

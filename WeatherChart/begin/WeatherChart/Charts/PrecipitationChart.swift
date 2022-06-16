@@ -1,4 +1,4 @@
-/// Copyright (c) 2019 Razeware LLC
+/// Copyright (c) 2022 Razeware LLC
 /// 
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
@@ -26,34 +26,57 @@
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
 
+
 import SwiftUI
 
-struct PrecipitationTab: View {
-  var station: WeatherStation
-  
-  func monthFromName(_ name: String) -> Int {
-    let df = DateFormatter()
-    df.dateFormat = "LLLL"
-    if let date = df.date(from: name) {
-      return Calendar.current.component(.month, from: date)
+struct PrecipitationChart: View{
+    
+    var measurements: [DayInfo]
+
+    func sumPrecipitation(_ month: Int) -> Double {
+      self.measurements.filter {
+        Calendar.current.component(.month, from: $0.date) == month + 1
+      }.reduce(0, { $0 + $1.precipitation })
     }
-    return 0
-  }
-  
- 
-  
-  
-  
-  var body: some View {
-    VStack {
-      Text("Precipitation for 2018")
-        PrecipitationChart(measurements: station.measurements)
-    }.padding()
+
+    func monthAbbreviationFromInt(_ month: Int) -> String {
+      let ma = Calendar.current.shortMonthSymbols
+      return ma[month]
+    }
+
+    var body: some View {
+        // 1
+        HStack {
+          // 2
+          ForEach(0..<12) { month in
+            // 3
+            VStack {
+              // 4
+              Spacer()
+              Text("\(self.sumPrecipitation(month).stringToOneDecimal)")
+                  .font(.footnote)
+                  .rotationEffect(.degrees(-90))
+                  .offset(y: self.sumPrecipitation(month) < 2.4 ? 0 : 35)
+                  .zIndex(1)
+
+              // 5
+              Rectangle()
+                .fill(Color.red)
+                .frame(width: 20, height: CGFloat(self.sumPrecipitation(month)) * 15.0)
+              // 6
+              Text("\(self.monthAbbreviationFromInt(month))")
+                .font(.footnote)
+                .frame(height: 20)
+            }
+          }
+        }
+    }
+    
+}
+
+struct PrecipitationChart_Previews: PreviewProvider {
+  static var previews: some View {
+    PrecipitationChart(measurements: WeatherInformation()!.stations[2].measurements)
   }
 }
 
-struct PrecipitationTab_Previews: PreviewProvider {
-  static var previews: some View {
-    PrecipitationTab(station: WeatherInformation()!.stations[1])
-  }
-}
